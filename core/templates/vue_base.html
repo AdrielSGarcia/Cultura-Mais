@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cultura Mais - Portal Cultural</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>">
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'core/css/vue-style.css' %}">
+    
+    <style>
+        /* Adiciona um espaçamento no topo do body para compensar a navbar fixa. 
+           Isso evita que o conteúdo comece escondido atrás dela. */
+        body {
+            padding-top: 45px; /* Ajuste este valor se a altura da sua navbar mudar */
+        }
+
+        /* OTIMIZAÇÃO: Animação de fade-in customizada para substituir Animate.css */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        /* Garante que o container principal ocupe o espaço corretamente */
+        #app, .main-app-content {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div id="app">
+        <div v-if="loading" class="loading-screen">
+            <div class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-3">Carregando Cultura Mais...</p>
+            </div>
+        </div>
+
+        <div v-else class="main-app-content">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-lg fixed-top">
+                <div class="container">
+                    <a class="navbar-brand fw-bold" href="#" @click.prevent="navigateTo('home')">
+                        <i class="fas fa-palette me-2"></i>
+                        <span class="brand-text">Cultura Mais</span>
+                    </a>
+                    
+                    <button class="navbar-toggler" type="button" @click="toggleMobileMenu">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    
+                    <div class="collapse navbar-collapse" :class="{'show': mobileMenuOpen}" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" @click.prevent="navigateTo('home')" :class="{'active': currentPage === 'home'}"><i class="fas fa-home me-1"></i> Início</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" @click.prevent="navigateTo('noticias')" :class="{'active': currentPage === 'noticias'}"><i class="fas fa-newspaper me-1"></i> Notícias</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" @click.prevent="navigateTo('artigos')" :class="{'active': currentPage === 'artigos'}"><i class="fas fa-book me-1"></i> Artigos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" @click.prevent="navigateTo('editais')" :class="{'active': currentPage === 'editais'}"><i class="fas fa-file-alt me-1"></i> Editais</a>
+                            </li>
+                        </ul>
+                        
+                        <form class="d-flex me-3" @submit.prevent="performSearch">
+                            <div class="input-group">
+                                <input class="form-control" type="search" placeholder="Buscar..." v-model="searchQuery" aria-label="Search">
+                                <button class="btn btn-outline-light" type="submit"><i class="fas fa-search"></i></button>
+                            </div>
+                        </form>
+                        
+                        <ul class="navbar-nav">
+                            <li class="nav-item dropdown" v-if="user">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user me-1"></i> <span v-text="user.first_name || user.username"></span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#" @click.prevent="navigateTo('profile')"><i class="fas fa-user-cog me-2"></i> Perfil</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" @click.prevent="logout"><i class="fas fa-sign-out-alt me-2"></i> Sair</a></li>
+                                </ul>
+                            </li>
+                            <template v-else>
+                                <li class="nav-item"><a class="nav-link" href="#" @click.prevent="navigateTo('login')"><i class="fas fa-sign-in-alt me-1"></i> Entrar</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#" @click.prevent="navigateTo('register')"><i class="fas fa-user-plus me-1"></i> Cadastrar</a></li>
+                            </template>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="alert-container" v-if="alert.show">
+                <div class="container">
+                    <div class="alert" :class="'alert-' + alert.type + ' alert-dismissible fade show'" role="alert">
+                        <i :class="getAlertIcon(alert.type)" class="me-2"></i> {{ alert.message }}
+                        <button type="button" class="btn-close" @click="closeAlert"></button>
+                    </div>
+                </div>
+            </div>
+
+            <main class="main-content flex-grow-1">
+                <div v-if="currentPage === 'home'" class="fade-in"><home-component :home-data="homeData" @navigate="navigateTo" @show-alert="showAlert"></home-component></div>
+                <div v-else-if="currentPage === 'noticias'" class="fade-in"><noticias-component :noticias="noticias" @navigate="navigateTo" @show-alert="showAlert"></noticias-component></div>
+                <div v-else-if="currentPage === 'artigos'" class="fade-in"><artigos-component :artigos="artigos" @navigate="navigateTo" @show-alert="showAlert"></artigos-component></div>
+                <div v-else-if="currentPage === 'editais'" class="fade-in"><editais-component :editais="editais" @navigate="navigateTo" @show-alert="showAlert"></editais-component></div>
+                <div v-else-if="currentPage === 'noticia-detail'" class="fade-in"><noticia-detail-component :noticia-id="selectedId" :user="user" @navigate="navigateTo" @show-alert="showAlert"></noticia-detail-component></div>
+                <div v-else-if="currentPage === 'artigo-detail'" class="fade-in"><artigo-detail-component :artigo-id="selectedId" :user="user" @navigate="navigateTo" @show-alert="showAlert"></artigo-detail-component></div>
+                <div v-else-if="currentPage === 'edital-detail'" class="fade-in"><edital-detail-component :edital-id="selectedId" :user="user" @navigate="navigateTo" @show-alert="showAlert"></edital-detail-component></div>
+                <div v-else-if="currentPage === 'login'" class="fade-in"><login-component @login-success="handleLoginSuccess" @navigate="navigateTo" @show-alert="showAlert"></login-component></div>
+                <div v-else-if="currentPage === 'register'" class="fade-in"><register-component @register-success="handleRegisterSuccess" @navigate="navigateTo" @show-alert="showAlert"></register-component></div>
+                <div v-else-if="currentPage === 'profile'" class="fade-in"><profile-component :user="user" @navigate="navigateTo" @show-alert="showAlert" @profile-updated="handleProfileUpdated"></profile-component></div>
+                <div v-else-if="currentPage === 'search'" class="fade-in"><search-results-component :search-results="searchResults" :search-query="lastSearchQuery" @navigate="navigateTo" @show-alert="showAlert"></search-results-component></div>
+            </main>
+
+            <footer class="bg-dark text-white">
+                <div class="container py-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="mb-3"><i class="fas fa-palette me-2"></i> Cultura Mais</h5>
+                            <p class="text-muted mb-3">Seu portal de informações culturais. Conectando pessoas através da arte e da cultura.</p>
+                            <div class="social-links">
+                                <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                                <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                                <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                                <a href="#" class="text-white"><i class="fab fa-youtube"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <h6 class="mb-3">Links Rápidos</h6>
+                            <ul class="list-unstyled">
+                                <li><a href="#" @click.prevent="navigateTo('home')" class="text-muted">Início</a></li>
+                                <li><a href="#" @click.prevent="navigateTo('noticias')" class="text-muted">Notícias</a></li>
+                                <li><a href="#" @click.prevent="navigateTo('artigos')" class="text-muted">Artigos</a></li>
+                                <li><a href="#" @click.prevent="navigateTo('editais')" class="text-muted">Editais</a></li>
+                            </ul>
+                            <p class="text-muted mb-0 mt-3">© 2025 Cultura Mais. Todos os direitos reservados.</p>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js" defer></script>
+    
+    <script src="{% static 'core/js/vue-components.js' %}" defer></script>
+    <script src="{% static 'core/js/vue-advanced-components.js' %}" defer></script>
+    <script src="{% static 'core/js/vue-detail-components.js' %}" defer></script>
+    <script src="{% static 'core/js/vue-app.js' %}" defer></script>
+</body>
+</html>

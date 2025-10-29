@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ artigo.titulo }}</h1>
+    <p>{{ artigo.data_publicacao }} por {{ artigo.autor.username }}</p>
+    <p>{{ artigo.conteudo }}</p>
+
+    <h2>Comentários</h2>
+    {% for comentario in comentarios %}
+        <div>
+            <p>{{ comentario.conteudo }}</p>
+            <p>Por {{ comentario.autor.username }} em {{ comentario.data_publicacao }}</p>
+        </div>
+    {% empty %}
+        <p>Nenhum comentário ainda.</p>
+    {% endfor %}
+{% endblock %}
+
+    <h2>Adicionar um comentário</h2>
+    <form method="POST" action="{% url 'add_comment_to_artigo' pk=artigo.pk %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Adicionar Comentário</button>
+    </form>
+

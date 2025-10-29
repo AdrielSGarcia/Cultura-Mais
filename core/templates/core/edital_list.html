@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Editais - Cultura Mais{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <h1 class="content-title mb-4">Editais</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for edital in editais %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{% url 'edital_detail' pk=edital.pk %}" class="text-decoration-none">
+                                {{ edital.nome }}
+                            </a>
+                        </h5>
+                        <p class="content-meta">
+                            <i class="fas fa-calendar"></i> {{ edital.data_publicacao|date:"d/m/Y H:i" }} 
+                            <br>
+                            <i class="fas fa-user"></i> {{ edital.autor.username }}
+                        </p>
+                        <p class="card-text">{{ edital.conteudo|truncatechars:150 }}</p>
+                        <a href="{% url 'edital_detail' pk=edital.pk %}" class="btn btn-primary">Leia mais</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    Nenhum Edital disponível no momento.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+

@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Cultura Mais - Portal Cultural{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-gradient-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-palette"></i> Bem-vindo ao Cultura Mais
+                </h1>
+                <p class="lead mb-4">
+                    Seu portal de informações culturais. Fique por dentro das últimas notícias, 
+                    artigos especializados e editais culturais da nossa região.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'noticia_list' %}" class="btn btn-light btn-lg">
+                        <i class="fas fa-newspaper"></i> Ver Notícias
+                    </a>
+                    <a href="{% url 'artigo_list' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-book"></i> Artigos
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <i class="fas fa-theater-masks display-1 opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    {% if noticias %}
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">
+                <i class="fas fa-newspaper text-primary"></i> Últimas Notícias
+            </h2>
+            <a href="{% url 'noticia_list' %}" class="btn btn-outline-primary">
+                Ver todas <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        
+        <div class="row">
+            {% for noticia in noticias %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm hover-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-primary me-2">Notícia</span>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> {{ noticia.data_publicacao|date:"d/m/Y" }}
+                            </small>
+                        </div>
+                        <h5 class="card-title">
+                            <a href="{% url 'noticia_detail' pk=noticia.pk %}" class="text-decoration-none">
+                                {{ noticia.titulo }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted">{{ noticia.conteudo|truncatechars:120 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-user"></i> {{ noticia.autor.first_name|default:noticia.autor.username }}
+                            </small>
+                            <a href="{% url 'noticia_detail' pk=noticia.pk %}" class="btn btn-sm btn-primary">
+                                Leia mais
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if artigos %}
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">
+                <i class="fas fa-book text-success"></i> Artigos Recentes
+            </h2>
+            <a href="{% url 'artigo_list' %}" class="btn btn-outline-success">
+                Ver todos <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        
+        <div class="row">
+            {% for artigo in artigos %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm hover-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success me-2">Artigo</span>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> {{ artigo.data_publicacao|date:"d/m/Y" }}
+                            </small>
+                        </div>
+                        <h5 class="card-title">
+                            <a href="{% url 'artigo_detail' pk=artigo.pk %}" class="text-decoration-none">
+                                {{ artigo.titulo }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted">{{ artigo.conteudo|truncatechars:120 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-user"></i> {{ artigo.autor.first_name|default:artigo.autor.username }}
+                            </small>
+                            <a href="{% url 'artigo_detail' pk=artigo.pk %}" class="btn btn-sm btn-success">
+                                Leia mais
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Latest Editais -->
+    {% if editais %}
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">
+                <i class="fas fa-file-alt text-warning"></i> Editais Recentes
+            </h2>
+            <a href="{% url 'edital_list' %}" class="btn btn-outline-warning">
+                Ver todos <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        
+        <div class="row">
+            {% for edital in editais %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm hover-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-warning text-dark me-2">Edital</span>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> {{ edital.data_publicacao|date:"d/m/Y" }}
+                            </small>
+                        </div>
+                        <h5 class="card-title">
+                            <a href="{% url 'edital_detail' pk=edital.pk %}" class="text-decoration-none">
+                                {{ edital.titulo }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted">{{ edital.conteudo|truncatechars:120 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-user"></i> {{ edital.autor.first_name|default:edital.autor.username }}
+                            </small>
+                            <a href="{% url 'edital_detail' pk=edital.pk %}" class="btn btn-sm btn-warning">
+                                Ver detalhes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if not noticias and not artigos and not editais %}
+    <div class="text-center py-5">
+        <i class="fas fa-inbox display-1 text-muted mb-3"></i>
+        <h3 class="text-muted">Nenhum conteúdo disponível</h3>
+        <p class="text-muted">Em breve teremos novidades para você!</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
